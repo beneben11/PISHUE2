@@ -5,53 +5,45 @@ import common.MessageHandler;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class Server implements Runnable{
 
-	private int port;
+    private int port;
     private ServerSocket ss;
     private Socket client_socket;
+    private StringBuilder sb = new StringBuilder("");
 
-    public Server(){
-        this.port = 1996;
-    }
-    
     public Server(int port){
         this.port = port;
+    }
+
+    public String getServerLog(){
+        return sb.toString();
     }
 
     @Override
     public void run() {
         try {
-			ExecutorService exec = Executors.newFixedThreadPool(3);
             ss = new ServerSocket(port);
-            System.out.println("Server is up");
-            client_socket = ss.accept();
-            BufferedReader from_client = new BufferedReader(new InputStreamReader(client_socket.getInputStream()));
-            PrintWriter out = new PrintWriter(client_socket.getOutputStream());
-            while(!ss.isClosed()) {
-                String incoming_msg = from_client.readLine();
-                System.out.print(incoming_msg + "\n");
-                MessageHandler msg = new MessageHandler(incoming_msg);
-                String cmd = msg.getCmd();
-                String user = msg.getMsg();
-                String anwort = (cmd + ":ok" + "\n");
-                out.print(anwort);
+            sb.append("Server is up and waiting for connection."+"\n");
+            LaunchServer.getInstance().updateGUI();
+            while(true) {
+                client_socket = ss.accept();
+                BufferedReader in = new BufferedReader(new InputStreamReader(client_socket.getInputStream()));
+                PrintWriter out = new PrintWriter(new OutputStreamWriter(client_socket.getOutputStream()));
+                sb.append("New client has connected!"+"\n");
+                LaunchServer.getInstance().updateGUI();
+                MessageHandler msg = new MessageHandler(in.readLine());
+                out.print("connect:ok"+"\n");
                 out.flush();
+                String username = msg.getMsg();
+                Teilnehmer teilnehmer = new Teilnehmer(client_socket,username);
+                Thread t = new Thread(teilnehmer);
+                t.start();
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public synchronized void setPort(int port) {
-        
-        this.port = port;
-    }
-    public synchronized ServerSocket getServerSocket() {
-        
-        return ss;
-    }
 }
