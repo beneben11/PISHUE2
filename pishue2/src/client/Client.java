@@ -16,6 +16,7 @@ public class Client implements Runnable {
     private StringBuilder chatLog = new StringBuilder("");
     private ArrayList<String> member_list = new ArrayList<>();
     private boolean newMessage = false;
+    private boolean newClient = false;
 
     public Client() {
         this.username = "Client";
@@ -65,12 +66,8 @@ public class Client implements Runnable {
     public void sendMessage(String msg) {
         try {
             if (s != null) {
-                boolean connec = s.isClosed();
-                System.out.println(connec);
                 if (s.isConnected()) {
-                    System.out.println(s);
                     PrintWriter print = new PrintWriter(new OutputStreamWriter(s.getOutputStream()));
-                    System.out.println("sendmsg:" + msg);
                     print.print(msg + "\n");
                     print.flush();
                 }
@@ -89,16 +86,16 @@ public class Client implements Runnable {
             sendMessage("connect:" + username);
             while (!s.isClosed()) {
                 readIncomingMessage = socket_in.readLine();
-                System.out.println(readIncomingMessage);
                 if (readIncomingMessage != null) {
                     MessageHandler incoming_msg = new MessageHandler(readIncomingMessage);
                     String cmd = incoming_msg.getCmd();
                     String msg = incoming_msg.getMsg();
+                    System.out.println(cmd+":"+msg);
                     newMessage = true;
                     switch (cmd) {
                         case "connect":
                             if (msg.equals("ok")) {
-                                chatLog.append("Connection to the server is succesfully established");
+                                chatLog.append("Connection to the server is succesfully established"+"\n");
                             }
                             break;
                         case "refused":
@@ -134,15 +131,19 @@ public class Client implements Runnable {
                             for (String user : users) {
                                 member_list.add(user);
                             }
+                            newClient = true;
                             break;
                         case "message":
                             chatLog.append(msg + "\n");
                             break;
-
                     }
-                    System.out.println(chatLog);
                     if (newMessage) {
-                        LaunchClient.getInstance().updateGui();
+                        LaunchClient.getInstance().updateChat();
+                        newMessage = false;
+                    }
+                    if (newClient){
+                        LaunchClient.getInstance().updateClient();
+                        newClient = false;
                     }
                 }
             }
