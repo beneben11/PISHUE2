@@ -12,9 +12,11 @@ public class Server implements Runnable{
     private ServerSocket ss;
     private Socket client_socket;
     private StringBuilder sb = new StringBuilder("");
+    private TeilnehmerListe teilnehmerListe;
 
     public Server(int port){
         this.port = port;
+        teilnehmerListe = new TeilnehmerListe();
     }
 
     public String getServerLog(){
@@ -31,15 +33,35 @@ public class Server implements Runnable{
                 client_socket = ss.accept();
                 BufferedReader in = new BufferedReader(new InputStreamReader(client_socket.getInputStream()));
                 PrintWriter out = new PrintWriter(new OutputStreamWriter(client_socket.getOutputStream()));
-                sb.append("New client has connected!"+"\n");
-                LaunchServer.getInstance().updateGUI();
                 MessageHandler msg = new MessageHandler(in.readLine());
-                out.print("connect:ok"+"\n");
-                out.flush();
-                String username = msg.getMsg();
-                Teilnehmer teilnehmer = new Teilnehmer(client_socket,username);
-                Thread t = new Thread(teilnehmer);
-                t.start();
+                if (msg.getCmd().equals("connect")){
+                    String username = msg.getMsg();
+                    ConnectedClient client = new ConnectedClient(client_socket, username,teilnehmerListe);
+                    boolean added = teilnehmerListe.addClient(client);
+                    if (added == true){
+                        sb.append("New client has connected!"+"\n");
+                        Thread t = new Thread(client);
+                        t.start();
+                        out.print("connect:ok"+"\n");
+                        out.flush();
+                        teilnehmerListe.sendUpdateClient();
+                    }else{
+                        sb.append(client_socket.getLocalAddress().getHostName() +" has left."+"\n");
+                        client_socket.close();
+                    }
+                }else if(msg.getCmd().equals("disconnect")){
+                    String message = msg.getMsg();
+                    if (message.equals(" ")){
+                        out.print("disconnect:ok"+"\n");
+                        out.flush();
+                        client_socket.close();
+                    }else{
+                        out.print("disconnect:invalid_command"+"\n");
+                        out.flush();
+                        client_socket.close();
+                    }
+                }
+                LaunchServer.getInstance().updateGUI();
             }
         } catch (IOException e) {
             e.printStackTrace();
