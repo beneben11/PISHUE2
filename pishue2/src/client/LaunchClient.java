@@ -3,6 +3,7 @@ package client;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 
 public class LaunchClient {
 
@@ -15,13 +16,14 @@ public class LaunchClient {
     private JLabel username_Label;
     private JTextField port_field;
     private JTextField host_field;
-    private JTextArea client_list_field;
+    private JList client_list_field;
     private JTextField username_field;
     private JTextField input_field;
     private JTextArea chat_area;
     private JButton btn_connect;
     private JButton btn_disconnect;
     private JButton btn_send;
+    private DefaultListModel<String> list_model;
 
     Thread thread_client;
     Client client;
@@ -65,7 +67,8 @@ public class LaunchClient {
         username_field.setBounds(150,130,325,50);
         pane.add(username_field);
 
-        client_list_field = new JTextArea();
+        list_model = new DefaultListModel<>();
+        client_list_field = new JList(list_model);
         client_list_field.setBounds(600,295,375,325);
         pane.add(client_list_field);
 
@@ -87,7 +90,7 @@ public class LaunchClient {
         btn_disconnect.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(java.awt.event.ActionEvent e) {
-
+                client.sendMessage("disconnect: "+"\n");
             }
         });
         pane.add(btn_disconnect);
@@ -107,7 +110,9 @@ public class LaunchClient {
         btn_send.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(java.awt.event.ActionEvent e) {
-
+                String msg = "message:"+input_field.getText();
+                client.sendMessage(msg);
+                input_field.setText("");
             }
         });
         pane.add(btn_send);
@@ -124,11 +129,26 @@ public class LaunchClient {
         return instance;
     }
 
-    public void updateGui(){
+    public void updateChat(){
+        list_model.clear();
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
                 chat_area.setText(client.getChatLog());
+            }
+        });
+    }
+
+    public void updateClient(){
+        list_model.clear();
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                ArrayList<String> member = new ArrayList<>();
+                member = client.getMemberList();
+                for(int i = 0; i<member.size(); i++){
+                    list_model.add(i,member.get(i));
+                }
             }
         });
     }
