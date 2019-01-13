@@ -12,9 +12,9 @@ import java.util.ArrayList;
  */
 public class Client implements Runnable {
 
-    private String host;
-    private int port;
-    private String username;
+    private String host; //darf nicht leer sein
+    private int port;   //darf nicht leer sein
+    private String username; //darf nicht leer sein, laenger als 30 zeichnen, ":" enthaelt.
     private Socket s;
     private StringBuilder chatLog = new StringBuilder("");
     private ArrayList<String> member_list = new ArrayList<>();
