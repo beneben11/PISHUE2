@@ -6,9 +6,12 @@ import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
 
+/**
+ * @author 5127797, Ramli, Benedictus William
+ * @author 5130292, Fadilah, Verdy Aprian
+ */
 public class Client implements Runnable {
 
-    private Client instance;
     private String host;
     private int port;
     private String username;
@@ -17,13 +20,23 @@ public class Client implements Runnable {
     private ArrayList<String> member_list = new ArrayList<>();
     private boolean newMessage = false;
     private boolean newClient = false;
+    private boolean isDisconnected = false;
 
+    /**
+     * Default-Constructor
+     */
     public Client() {
         this.username = "Client";
         this.host = "127.0.0.1";
         this.port = 1996;
     }
 
+    /**
+     * @param username
+     * @param host
+     * @param port
+     * parameterisiert Constructor
+     */
     public Client(String username, String host, int port) {
         this.username = username;
         this.host = host;
@@ -58,11 +71,10 @@ public class Client implements Runnable {
         return member_list;
     }
 
-    public Client getInstance() {
-        if (instance == null) instance = new Client();
-        return instance;
-    }
-
+    /**
+     * @param msg
+     * Zum Senden der Nachrichten zum anderen Client
+     */
     public void sendMessage(String msg) {
         try {
             if (s != null) {
@@ -77,6 +89,10 @@ public class Client implements Runnable {
         }
     }
 
+    /* (non-Javadoc)
+     * @see java.lang.Runnable#run()
+     * Diese Methode empfangt und sendet Nachricht zum Server
+     */
     @Override
     public void run() {
         try {
@@ -90,12 +106,12 @@ public class Client implements Runnable {
                     MessageHandler incoming_msg = new MessageHandler(readIncomingMessage);
                     String cmd = incoming_msg.getCmd();
                     String msg = incoming_msg.getMsg();
-                    System.out.println(cmd+":"+msg);
                     newMessage = true;
                     switch (cmd) {
                         case "connect":
                             if (msg.equals("ok")) {
                                 chatLog.append("Connection to the server is succesfully established"+"\n");
+                                LaunchClient.getInstance().setGUIWhenConnected();
                             }
                             break;
                         case "refused":
@@ -112,6 +128,8 @@ public class Client implements Runnable {
                             }
                             break;
                         case "disconnect":
+                            newClient = true;
+                            isDisconnected = true;
                             switch (msg) {
                                 case "ok":
                                     chatLog.append("Disconnected from the server" + "\n");
@@ -144,6 +162,9 @@ public class Client implements Runnable {
                     if (newClient){
                         LaunchClient.getInstance().updateClient();
                         newClient = false;
+                    }
+                    if(isDisconnected){
+                        Thread.interrupted();
                     }
                 }
             }
