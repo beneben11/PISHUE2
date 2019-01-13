@@ -13,7 +13,7 @@ import java.net.Socket;
 
 public class Server implements Runnable {
 
-    private int port;
+    private int port; //darf nicht leer sein
     private ServerSocket ss;
     private Socket client_socket;
     private TeilnehmerListe teilnehmerListe;
