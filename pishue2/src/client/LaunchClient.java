@@ -5,9 +5,22 @@ import java.awt.*;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 
+/**
+ * @author 5127797, Ramli, Benedictus William
+ * @author 5130292, Fadilah, Verdy Aprian
+ * Class zur Ausfuehrung des Client-Fensters
+ */
+
 public class LaunchClient {
 
+	
+    /**
+     * Zustand von Objekt
+     */
     private static LaunchClient instance;
+    /**
+     * Alle sind Elementen von GUI
+     */
     private JFrame frame;
     private JPanel pane;
     private JLabel port_label;
@@ -28,11 +41,20 @@ public class LaunchClient {
     Thread thread_client;
     Client client;
 
+    /**
+     * Methode zur Ausfuehrung der GUI
+     */
     public LaunchClient(){
+    	
         initGui();
     }
 
+    /**
+     * Methode zum Initialisieren der GUI-Elementen
+     */
+  
     public void initGui(){
+    	
         frame = new JFrame();
 
         pane = new JPanel();
@@ -72,31 +94,53 @@ public class LaunchClient {
         client_list_field.setBounds(600,295,375,325);
         pane.add(client_list_field);
 
+        
         btn_connect = new JButton("Connect");
         btn_connect.setBounds(550,130,200,50);
         btn_connect.addActionListener(new ActionListener() {
+        	
+            /* (non-Javadoc)
+             * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+             * Methode zum Verbinden zum Server durch den Klick
+             */
             @Override
             public void actionPerformed(java.awt.event.ActionEvent e) {
-                int port = Integer.parseInt(port_field.getText());
-                client = new Client(username_field.getText(), host_field.getText(), port);
-                thread_client = new Thread(client);
-                thread_client.start();
+                if(!port_field.getText().equals("") && !host_field.getText().equals("") && !username_field.getText().equals("")) {
+                    int port = Integer.parseInt(port_field.getText());
+                    client = new Client(username_field.getText(), host_field.getText(), port);
+                    thread_client = new Thread(client);
+                    thread_client.start();
+                }else{
+                    JOptionPane.showMessageDialog(null, "Port, Host or Username is empty.");
+                }
+
             }
         });
         pane.add(btn_connect);
 
         btn_disconnect = new JButton("Disconnect");
+        btn_disconnect.setEnabled(false);
         btn_disconnect.setBounds(775,130,200,50);
         btn_disconnect.addActionListener(new ActionListener() {
+            /* (non-Javadoc)
+             * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+             * Methode zum Abtrennen von Server durch den Klick
+             */
             @Override
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 client.sendMessage("disconnect: "+"\n");
+                btn_connect.setEnabled(true);
+                username_field.setEditable(true);
+                port_field.setEditable(true);
+                host_field.setEditable(true);
+                btn_disconnect.setEnabled(false);
             }
         });
         pane.add(btn_disconnect);
 
         chat_area = new JTextArea();
         chat_area.setBounds(50,220,500,400);
+        chat_area.setEditable(false);
         pane.add(chat_area);
 
         input_field = new JTextField();
@@ -108,8 +152,13 @@ public class LaunchClient {
         btn_send.setLocation(600,660);
         btn_send.setBounds(600,660,375,50);
         btn_send.addActionListener(new ActionListener() {
+            /* (non-Javadoc)
+             * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+             * Methode zum Senden des Chats von Client
+             */
             @Override
             public void actionPerformed(java.awt.event.ActionEvent e) {
+            	
                 String msg = "message:"+input_field.getText();
                 client.sendMessage(msg);
                 input_field.setText("");
@@ -129,8 +178,12 @@ public class LaunchClient {
         return instance;
     }
 
+    
+    /**
+     * Zum Aktualisieren des Chat-Fensters
+     */
     public void updateChat(){
-        list_model.clear();
+    	
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -139,6 +192,9 @@ public class LaunchClient {
         });
     }
 
+    /**
+     * Zum Aktualisieren des Fensters von verbundenen Clients
+     */
     public void updateClient(){
         list_model.clear();
         SwingUtilities.invokeLater(new Runnable() {
@@ -149,6 +205,22 @@ public class LaunchClient {
                 for(int i = 0; i<member.size(); i++){
                     list_model.add(i,member.get(i));
                 }
+            }
+        });
+    }
+
+    /**
+     * Zum Setzen von mehreren GUI-Elementen w�hrend der Verbindung von Client
+     */
+    public void setGUIWhenConnected(){
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                btn_connect.setEnabled(false);
+                username_field.setEditable(false);
+                port_field.setEditable(false);
+                host_field.setEditable(false);
+                btn_disconnect.setEnabled(true);
             }
         });
     }

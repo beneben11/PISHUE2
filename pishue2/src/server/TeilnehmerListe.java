@@ -1,20 +1,30 @@
 package server;
 
+import client.LaunchClient;
 import common.MessageHandler;
 
 import java.io.*;
 import java.net.Socket;
 import java.util.*;
-
+/**
+ * @author 5127797, Ramli, Benedictus William
+ * @author 5130292, Fadilah, Verdy Aprian
+ */
 public class TeilnehmerListe {
 
     private ArrayList<ConnectedClient> client_list;
-    private String member;
 
     public TeilnehmerListe(){
         client_list = new ArrayList<>();
     }
 
+    /**
+     * Zum Hinzufuegen der Clients
+     * @param client
+     * @return
+     * @throws IOException gibt Fehlermeldung, wenn es zuviel Clients gibt, Name nicht mehr verfügbar ist,
+     * Name zu lang ist, oder Name unzulaessige Zeichen benutzt. 
+     */
     public synchronized boolean addClient(ConnectedClient client) throws IOException {
         boolean added = false;
         String username = client.getUsername();
@@ -47,6 +57,11 @@ public class TeilnehmerListe {
         return client_list.size();
     }
 
+    /**
+     * ueberprueft, ob der Name zulaessig und nicht zu lang ist.
+     * @param username
+     * @return
+     */
     public synchronized boolean checkName(String username){
         boolean correct = false;
         if(username.length() <= 30 && !username.contains(":")){
@@ -56,6 +71,11 @@ public class TeilnehmerListe {
         return correct;
     }
 
+    /**
+     * ueberprueft, ob der Name noch verfuegbar ist.
+     * @param username
+     * @return
+     */
     public synchronized boolean checkDuplicate(String username){
         boolean taken = false;
         for(int i = 0; i < clientCount(); i++){
@@ -69,6 +89,11 @@ public class TeilnehmerListe {
         return taken;
     }
 
+    /**
+     * Zum Erhalten des Index von Client in Array von Client
+     * @param username
+     * @return
+     */
     public synchronized int getIndex(String username){
         int index = 0;
         for(int i = 0; i < clientCount(); i++){
@@ -83,21 +108,32 @@ public class TeilnehmerListe {
         return client_list;
     }
 
+    /**
+     * loescht den Name des Clients nach der Abtrennung
+     * @param username
+     */
     public synchronized void deleteClient(String username){
         int index = getIndex(username);
         client_list.remove(index);
+        LaunchServer.getInstance().getServerLog().append(username +" has left."+"\n");
+        LaunchServer.getInstance().updateGUI();
     }
 
+    /**
+     * @return gibt die Name der Clients zurueck
+     */
     public synchronized String getMember(){
         String name = "";
-        System.out.println(client_list.size());
         for(ConnectedClient clients : client_list){
             name = name +":"+clients.getUsername();
         }
-        System.out.println(name);
         return name;
     }
 
+    /**
+     * Zum Aktualisieren der Client-List
+     * @throws IOException
+     */
     public void sendUpdateClient() throws IOException{
         String msg = "namelist"+getMember()+"\n";
         for(ConnectedClient client : client_list){
