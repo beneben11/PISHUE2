@@ -1,9 +1,0 @@
-<application>
-  <component name="JavaFxSettings">
-    <option name="pathToSceneBuilder" value="$USER_HOME$/IdeaProjects/JavaFXTutorial/src/sample/sample.fxml" />
-    <option name="myPathToSceneBuilder" value="$USER_HOME$/IdeaProjects/JavaFXTutorial/src/sample/sample.fxml" />
-  </component>
-  <component name="RefactoringSettings">
-    <option name="MOVE_PREVIEW_USAGES" value="false" />
-  </component>
-</application>
