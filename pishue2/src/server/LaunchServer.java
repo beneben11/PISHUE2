@@ -46,20 +46,16 @@ public class LaunchServer {
         panel.setLayout(null);
 
         port_label = new JLabel("Port");
-        port_label.setBounds(25,25,100,50);
+        port_label.setBounds(25,25,50,50);
         panel.add(port_label);
 
         port_field = new JTextField("1996");
-        port_field.setBounds(150,25,200, 50);
+        port_field.setBounds(95,25,100, 50);
         panel.add(port_field);
 
         btn_start = new JButton("Start");
-        btn_start.setBounds(375,25,200,50);
+        btn_start.setBounds(215,25,155,50);
         btn_start.addActionListener(new ActionListener() {
-        	/* (non-Javadoc)
-             * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
-             * Methode zum Starten des Servers durch den Klick
-             */
             @Override
             public void actionPerformed(ActionEvent e) {
                 int port = Integer.parseInt(port_field.getText());
@@ -69,6 +65,34 @@ public class LaunchServer {
             }
         });
         panel.add(btn_start);
+
+        btn_stop = new JButton("Stop");
+        btn_stop.setBounds(390,25,155,50);
+        btn_stop.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                for(ConnectedClient client : server.getTeilnehmerListe().getClient_list()){
+                    try {
+                        PrintWriter to_client = new PrintWriter(new OutputStreamWriter(client.getClient_socket().getOutputStream()));
+                        to_client.print("disconnect:invalid_command"+"\n");
+                        to_client.flush();
+                        client.getClient_socket().close();
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    }
+                }
+                try {
+                    server.getSs().close();
+                } catch (IOException e1) {
+                    if(!server.getSs().isClosed()) {
+                        e1.printStackTrace();
+                    }
+                }
+                s_thread.interrupt();
+                server_log.setText(server_log.getText()+"Server stopped."+"\n");
+            }
+        });
+        panel.add(btn_stop);
 
         server_log = new JTextArea();
         server_log.setBounds(25,100,525,375);
